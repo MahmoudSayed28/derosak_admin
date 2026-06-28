@@ -7,124 +7,58 @@ class FirestoreService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  //===============================
-  // Main Collection
-  //===============================
-
-  Future<void> addDocument({
-    required String collection,
-    required String documentId,
-    required Map<String, dynamic> data,
-  }) async {
-    await _firestore.collection(collection).doc(documentId).set(data);
+  /// Main Collection
+  CollectionReference<Map<String, dynamic>> collection(
+    String path,
+  ) {
+    return _firestore.collection(path);
   }
 
+  /// Any Sub Collection
+  CollectionReference<Map<String, dynamic>> subCollection(
+    DocumentReference<Map<String, dynamic>> parent,
+    String path,
+  ) {
+    return parent.collection(path);
+  }
+
+  /// Add
+  Future<void> setDocument({
+    required DocumentReference<Map<String, dynamic>> reference,
+    required Map<String, dynamic> data,
+  }) async {
+    await reference.set(data);
+  }
+
+  /// Update
   Future<void> updateDocument({
-    required String collection,
-    required String documentId,
+    required DocumentReference<Map<String, dynamic>> reference,
     required Map<String, dynamic> data,
   }) async {
-    await _firestore.collection(collection).doc(documentId).update(data);
+    await reference.update(data);
   }
 
+  /// Delete
   Future<void> deleteDocument({
-    required String collection,
-    required String documentId,
+    required DocumentReference<Map<String, dynamic>> reference,
   }) async {
-    await _firestore.collection(collection).doc(documentId).delete();
+    await reference.delete();
   }
 
+  /// Get One
   Future<DocumentSnapshot<Map<String, dynamic>>> getDocument({
-    required String collection,
-    required String documentId,
+    required DocumentReference<Map<String, dynamic>> reference,
   }) {
-    return _firestore.collection(collection).doc(documentId).get();
+    return reference.get();
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getCollection({
-    required String collection,
-    String orderBy = 'createdAt',
+  /// Stream Collection
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamCollection({
+    required CollectionReference<Map<String, dynamic>> reference,
+    String orderBy = "createdAt",
     bool descending = false,
   }) {
-    return _firestore
-        .collection(collection)
-        .orderBy(orderBy, descending: descending)
-        .snapshots();
-  }
-
-  //===============================
-  // Sub Collection
-  //===============================
-
-  Future<void> addSubDocument({
-    required String collection,
-    required String documentId,
-    required String subCollection,
-    required String subDocumentId,
-    required Map<String, dynamic> data,
-  }) async {
-    await _firestore
-        .collection(collection)
-        .doc(documentId)
-        .collection(subCollection)
-        .doc(subDocumentId)
-        .set(data);
-  }
-
-  Future<void> updateSubDocument({
-    required String collection,
-    required String documentId,
-    required String subCollection,
-    required String subDocumentId,
-    required Map<String, dynamic> data,
-  }) async {
-    await _firestore
-        .collection(collection)
-        .doc(documentId)
-        .collection(subCollection)
-        .doc(subDocumentId)
-        .update(data);
-  }
-
-  Future<void> deleteSubDocument({
-    required String collection,
-    required String documentId,
-    required String subCollection,
-    required String subDocumentId,
-  }) async {
-    await _firestore
-        .collection(collection)
-        .doc(documentId)
-        .collection(subCollection)
-        .doc(subDocumentId)
-        .delete();
-  }
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> getSubDocument({
-    required String collection,
-    required String documentId,
-    required String subCollection,
-    required String subDocumentId,
-  }) {
-    return _firestore
-        .collection(collection)
-        .doc(documentId)
-        .collection(subCollection)
-        .doc(subDocumentId)
-        .get();
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> getSubCollection({
-    required String collection,
-    required String documentId,
-    required String subCollection,
-    String orderBy = 'createdAt',
-    bool descending = false,
-  }) {
-    return _firestore
-        .collection(collection)
-        .doc(documentId)
-        .collection(subCollection)
+    return reference
         .orderBy(orderBy, descending: descending)
         .snapshots();
   }

@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
+import 'package:derosak_admin/core/services/firestore_service.dart';
 import 'package:derosak_admin/core/services/supabase_service.dart';
 
 import '../../../../core/constants/app_collections.dart';
 import '../../../../core/errors/failure.dart';
-import '../../../../core/services/firestore_service.dart';
 import '../models/educational_stage_model.dart';
 import 'educational_stage_repo.dart';
 
@@ -18,11 +18,15 @@ class EducationalStageRepoImpl implements EducationalStageRepo {
 
   @override
   Future<Either<Failure, Unit>> addStage(
-      EducationalStageModel model) async {
+    EducationalStageModel model,
+  ) async {
     try {
-      await firestoreService.addDocument(
-        collection: AppCollections.educationalStages,
-        documentId: model.id,
+      final stageRef = firestoreService
+          .collection(AppCollections.educationalStages)
+          .doc(model.id);
+
+      await firestoreService.setDocument(
+        reference: stageRef,
         data: model.toJson(),
       );
 
@@ -34,11 +38,15 @@ class EducationalStageRepoImpl implements EducationalStageRepo {
 
   @override
   Future<Either<Failure, Unit>> updateStage(
-      EducationalStageModel model) async {
+    EducationalStageModel model,
+  ) async {
     try {
+      final stageRef = firestoreService
+          .collection(AppCollections.educationalStages)
+          .doc(model.id);
+
       await firestoreService.updateDocument(
-        collection: AppCollections.educationalStages,
-        documentId: model.id,
+        reference: stageRef,
         data: model.toJson(),
       );
 
@@ -54,11 +62,16 @@ class EducationalStageRepoImpl implements EducationalStageRepo {
     required String imageUrl,
   }) async {
     try {
-      await storageService.deleteImage(imageUrl);
+      if (imageUrl.isNotEmpty) {
+        await storageService.deleteImage(imageUrl);
+      }
+
+      final stageRef = firestoreService
+          .collection(AppCollections.educationalStages)
+          .doc(stageId);
 
       await firestoreService.deleteDocument(
-        collection: AppCollections.educationalStages,
-        documentId: stageId,
+        reference: stageRef,
       );
 
       return right(unit);
@@ -70,13 +83,19 @@ class EducationalStageRepoImpl implements EducationalStageRepo {
   @override
   Stream<Either<Failure, List<EducationalStageModel>>> getStages() async* {
     try {
+      final stagesRef = firestoreService.collection(
+        AppCollections.educationalStages,
+      );
+
       yield* firestoreService
-          .getCollection(collection: AppCollections.educationalStages)
+          .streamCollection(
+            reference: stagesRef,
+          )
           .map(
             (snapshot) => right(
               snapshot.docs
                   .map(
-                    (e) => EducationalStageModel.fromJson(e.data()),
+                    (doc) => EducationalStageModel.fromJson(doc.data()),
                   )
                   .toList(),
             ),
