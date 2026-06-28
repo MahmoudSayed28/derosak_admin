@@ -7,17 +7,9 @@ class FirestoreService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// ==========================
-  /// Collection Reference
-  /// ==========================
-
-  CollectionReference<Map<String, dynamic>> collection(String collection) {
-    return _firestore.collection(collection);
-  }
-
-  /// ==========================
-  /// Add Document
-  /// ==========================
+  //===============================
+  // Main Collection
+  //===============================
 
   Future<void> addDocument({
     required String collection,
@@ -27,10 +19,6 @@ class FirestoreService {
     await _firestore.collection(collection).doc(documentId).set(data);
   }
 
-  /// ==========================
-  /// Update Document
-  /// ==========================
-
   Future<void> updateDocument({
     required String collection,
     required String documentId,
@@ -39,20 +27,12 @@ class FirestoreService {
     await _firestore.collection(collection).doc(documentId).update(data);
   }
 
-  /// ==========================
-  /// Delete Document
-  /// ==========================
-
   Future<void> deleteDocument({
     required String collection,
     required String documentId,
   }) async {
     await _firestore.collection(collection).doc(documentId).delete();
   }
-
-  /// ==========================
-  /// Get One Document
-  /// ==========================
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getDocument({
     required String collection,
@@ -61,13 +41,9 @@ class FirestoreService {
     return _firestore.collection(collection).doc(documentId).get();
   }
 
-  /// ==========================
-  /// Stream Collection
-  /// ==========================
-
   Stream<QuerySnapshot<Map<String, dynamic>>> getCollection({
     required String collection,
-    String orderBy = "createdAt",
+    String orderBy = 'createdAt',
     bool descending = false,
   }) {
     return _firestore
@@ -76,15 +52,73 @@ class FirestoreService {
         .snapshots();
   }
 
-  /// ==========================
-  /// Stream Sub Collection
-  /// ==========================
+  //===============================
+  // Sub Collection
+  //===============================
+
+  Future<void> addSubDocument({
+    required String collection,
+    required String documentId,
+    required String subCollection,
+    required String subDocumentId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _firestore
+        .collection(collection)
+        .doc(documentId)
+        .collection(subCollection)
+        .doc(subDocumentId)
+        .set(data);
+  }
+
+  Future<void> updateSubDocument({
+    required String collection,
+    required String documentId,
+    required String subCollection,
+    required String subDocumentId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _firestore
+        .collection(collection)
+        .doc(documentId)
+        .collection(subCollection)
+        .doc(subDocumentId)
+        .update(data);
+  }
+
+  Future<void> deleteSubDocument({
+    required String collection,
+    required String documentId,
+    required String subCollection,
+    required String subDocumentId,
+  }) async {
+    await _firestore
+        .collection(collection)
+        .doc(documentId)
+        .collection(subCollection)
+        .doc(subDocumentId)
+        .delete();
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getSubDocument({
+    required String collection,
+    required String documentId,
+    required String subCollection,
+    required String subDocumentId,
+  }) {
+    return _firestore
+        .collection(collection)
+        .doc(documentId)
+        .collection(subCollection)
+        .doc(subDocumentId)
+        .get();
+  }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getSubCollection({
     required String collection,
     required String documentId,
     required String subCollection,
-    String orderBy = "createdAt",
+    String orderBy = 'createdAt',
     bool descending = false,
   }) {
     return _firestore
@@ -94,11 +128,4 @@ class FirestoreService {
         .orderBy(orderBy, descending: descending)
         .snapshots();
   }
-
-  /// ==========================
-  /// Server Timestamp
-  /// ==========================
-
-  Timestamp get serverTimestamp =>
-      Timestamp.now(); // أو FieldValue.serverTimestamp() عند الإضافة مباشرة
 }
