@@ -6,26 +6,46 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseStorageService {
   final SupabaseClient _client = Supabase.instance.client;
 
-  Future<String> uploadImage({
+  //====================================================
+  // Upload Image (Backward Compatibility)
+  //====================================================
+
+  Future<String> uploadImage({required File file, required String folder}) {
+    return uploadFile(file: file, folder: folder);
+  }
+
+  //====================================================
+  // Upload Any File
+  //====================================================
+
+  Future<String> uploadFile({
     required File file,
     required String folder,
   }) async {
     final fileName =
         "${DateTime.now().millisecondsSinceEpoch}_${basename(file.path)}";
 
-    final path = "$folder/$fileName";
+    final storagePath = "$folder/$fileName";
 
-    await _client.storage
-        .from("media")
-        .upload(path, file);
+    await _client.storage.from("media").upload(storagePath, file);
 
-    return _client.storage
-        .from("media")
-        .getPublicUrl(path);
+    return _client.storage.from("media").getPublicUrl(storagePath);
   }
 
-  Future<void> deleteImage(String imageUrl) async {
-    final uri = Uri.parse(imageUrl);
+  //====================================================
+  // Delete Image (Backward Compatibility)
+  //====================================================
+
+  Future<void> deleteImage(String imageUrl) {
+    return deleteFile(imageUrl);
+  }
+
+  //====================================================
+  // Delete Any File
+  //====================================================
+
+  Future<void> deleteFile(String fileUrl) async {
+    final uri = Uri.parse(fileUrl);
 
     final index = uri.path.indexOf("/media/");
 
@@ -33,8 +53,6 @@ class SupabaseStorageService {
 
     final storagePath = uri.path.substring(index + 7);
 
-    await _client.storage
-        .from("media")
-        .remove([storagePath]);
+    await _client.storage.from("media").remove([storagePath]);
   }
 }

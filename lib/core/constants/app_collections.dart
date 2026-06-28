@@ -4,4 +4,5 @@ abstract class AppCollections {
   static const courses = "courses";
   static const lessons = "lessons";
   static const quizzes = "quizzes";
+  static const resources = "resources";
 }
